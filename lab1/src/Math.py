@@ -1,15 +1,15 @@
 from pandas import DataFrame, concat
 from numpy import nan
 
-from typing import Iterable
+from typing import Iterable, Callable
 
 from math import factorial as fact
-from math import ceil
+from math import ceil, prod
 
 from .exc import InterpolationError
 
 
-NON_DERIVE_COLS = 3
+type _Pn = Callable[[float], float]
 
 
 def getRawConfiguration(data: DataFrame, power: int, val: float) -> DataFrame:
@@ -74,7 +74,7 @@ def newtonInterpolation(data: DataFrame, power: int, val: float) -> DataFrame:
     :return: Interpolation table adjusted to left upper corner
     :raises InterpolationError, RuntimeError: Interpolation error if not enough rows
     """
-    configuration: DataFrame = getRawConfiguration(data, power, val)
+    configuration: DataFrame = getRawConfiguration(data, power + 1, val)
 
     return __newtonInterpolate(configuration)
 
@@ -108,3 +108,22 @@ def hermiteInterpolation(data: DataFrame, power: int, val: float) -> DataFrame:
     print(configuration)
     return __newtonInterpolate(configuration)
 
+
+def getPolynomial(configurationTable: DataFrame) -> _Pn:
+    confRow: DataFrame = configurationTable.iloc[0]
+    xs: DataFrame = configurationTable.iloc[:, 0]
+
+    return lambda x: sum(
+        prod(x - xs.iloc[j-1] for j in range(1, i)) * confRow.iloc[i]
+        for i in range(1, len(confRow))
+    )
+
+
+def stringPolynomial(configurationTable: DataFrame) -> str:
+    confRow: DataFrame = configurationTable.iloc[0]
+    xs: DataFrame = configurationTable.iloc[:, 0]
+
+    return " + ".join(
+        "".join(f"(x - {xs.iloc[j-1]})" for j in range(1, i)) +
+        f" * ({confRow.iloc[i]})"
+        for i in range(1, len(confRow)))

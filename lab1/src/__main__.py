@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
 from .Table import Table
-from .Math import newtonInterpolation, hermiteInterpolation
+from .Math import newtonInterpolation, hermiteInterpolation, _Pn, getPolynomial, stringPolynomial
 
 
 DATA_FILE: str = "data/data.txt"
@@ -43,7 +43,16 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    # exit(main())
-    print(newtonInterpolation(directData, 4, 2.45))
-    # print(hermiteInterpolation(directData, 3, 2.45))
+    interpol = newtonInterpolation(directData, 3, 2.45)
+    print(interpol)
+    func: _Pn = getPolynomial(interpol)
+    x = 2.45
+    print(stringPolynomial(interpol))
+    print("x =", func(x))
+
+    interpol = hermiteInterpolation(directData, 3, 2.45)
+    print(interpol)
+    func: _Pn = getPolynomial(interpol)
+    print(stringPolynomial(interpol))
+    print("x =", func(x))
 
