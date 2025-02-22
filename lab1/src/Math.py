@@ -1,7 +1,7 @@
 from pandas import DataFrame, concat
 from numpy import nan
 
-from typing import Optional, Iterable
+from typing import Iterable
 
 from math import factorial as fact
 from math import ceil
@@ -14,29 +14,20 @@ NON_DERIVE_COLS = 3
 
 def getRawConfiguration(data: DataFrame, power: int, val: float) -> DataFrame:
     """
-    Returns DataFrame of adjacent values to val
+        Returns DataFrame of adjacent values to val
 
-    :param data: DataFrame of values in the 1st column
-    :param power: power of interpolation, requires 'power + 1' rows
-    :param val: value of the first column
-    :return: DataFrame of adjacent values to val
-    :raises InterpolationError, RuntimeError: Interpolation error if not enough rows, RuntimeError if any other error
-    """
+        :param data: DataFrame of values in the 1st column
+        :param power: power of interpolation, requires 'power + 1' rows
+        :param val: value of the first column
+        :return: DataFrame of adjacent values to val
+        :raises InterpolationError, RuntimeError: Interpolation error if not enough rows, RuntimeError if any other error
+        """
     if len(data) < power + 1:
         raise InterpolationError("Not enough points")
 
-    nearestRowIdx: int = (data.iloc[:, 0] - val).abs().idxmin()
+    configuration: DataFrame = data.sort_values(by=data.columns[0], key=lambda col: abs(col - val)).iloc[:power].copy()
+    configuration.sort_values(by=data.columns[0], inplace=True)
 
-    smallestIdx: int = nearestRowIdx - power // 2
-    largestIdx: int = smallestIdx + power
-
-    if smallestIdx < 0:
-        smallestIdx, largestIdx = 0, power  # todo: check indexes
-    elif largestIdx > len(data) - 1:
-        largestIdx = len(data) - 1
-        smallestIdx = largestIdx - power
-
-    configuration: DataFrame = data[smallestIdx:largestIdx].copy()
     configuration["tag"] = [f"x_{i}" for i in range(power)]
 
     return configuration
@@ -88,29 +79,6 @@ def newtonInterpolation(data: DataFrame, power: int, val: float) -> DataFrame:
     return __newtonInterpolate(configuration)
 
 
-def hermiteInterpolationBAD(data: DataFrame, power: int, val: float) -> DataFrame:
-    """
-    Assume all derivatives are known
-    :param data:
-    :param power:
-    :param val:
-    :return:
-    """
-    confPoints: int = (power + 1) // 3  # sum(n_k) = power + 1
-
-    configuration: DataFrame = getRawConfiguration(data, confPoints, val)
-    configExtension: DataFrame = configuration.copy()
-
-    configuration = concat(
-        [configuration] + [configExtension.copy() for _ in range(data.shape[1] - 2)], ignore_index=True
-    )  # todo add even control sum(n_k) = power + 1
-
-    configuration.sort_values(by="tag", inplace=True)
-    print(configuration)
-
-    return __newtonInterpolate(configuration)
-
-
 def hermiteInterpolation(data: DataFrame, power: int, val: float) -> DataFrame:
     """
     Assume all derivatives are known
@@ -130,7 +98,7 @@ def hermiteInterpolation(data: DataFrame, power: int, val: float) -> DataFrame:
         configurationExtensions.append(configuration.iloc[[copiedRowIdx]].copy())
         configurationExtensions.append(configuration.iloc[[copiedRowIdx]].copy())
 
-    if nArgs % 3 != 0:
+    if nArgs % 3 == 2:
         configurationExtensions.append(configuration.iloc[[-1]].copy())
 
     configuration = concat([configuration] + configurationExtensions, ignore_index=True)
