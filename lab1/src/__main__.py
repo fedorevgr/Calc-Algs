@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
 from .Table import Table
-from .Math import newtonInterpolation
+from .Math import newtonInterpolation, hermiteInterpolation
 
 
 DATA_FILE: str = "data/data.txt"
@@ -44,5 +44,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     # exit(main())
-    print(newtonInterpolation(directData, 4, 2.45))
+    # print(newtonInterpolation(directData, 4, 2.45))
+    print(hermiteInterpolation(directData, 3, 2.45))
 
