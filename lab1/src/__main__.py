@@ -1,6 +1,7 @@
 from pandas import DataFrame
 
 from .Table import Table
+from .Math import newtonInterpolation
 
 
 DATA_FILE: str = "data/data.txt"
@@ -21,8 +22,8 @@ d2x/dy2 = - y''/y'^2
 """
 data["x''"] = - data["y''"] / (data["y'"] ** 2)
 
-directData: DataFrame = DataFrame(data["x"], data["y"], data["y'"], data["y''"])
-reverseData: DataFrame = DataFrame(data["y"], data["x"], data["x'"], data["x''"])
+directData: DataFrame = data[["x", "y", "y'", "y''"]]
+reverseData: DataFrame = data[["y", "x", "x'", "x''"]]
 
 
 def main() -> int:
@@ -41,6 +42,7 @@ def main() -> int:
     return 0
 
 
-# if __name__ == "__main__":
-#     exit(main())
+if __name__ == "__main__":
+    # exit(main())
+    print(newtonInterpolation(directData, 4, 2.45))
 
