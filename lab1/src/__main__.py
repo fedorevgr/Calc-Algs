@@ -1,7 +1,7 @@
 from pandas import DataFrame
 
 from .Table import Table
-from .Math import newtonInterpolation, hermiteInterpolation, _Pn, getPolynomial, stringPolynomial
+from .Math import InterpolationTable, _Pn
 
 
 DATA_FILE: str = "data/data.txt"
@@ -27,32 +27,27 @@ reverseData: DataFrame = data[["y", "x", "x'", "x''"]]
 
 
 def main() -> int:
-    polynomPower: int
+    newtonPower: int
     hermitPower: int
     X: float
 
     try:
-        polynomPower = int(float("Enter polynom power: "))
-        hermitPower = int(float("Enter hermit power: "))
+        newtonPower = int(input("Enter newton power: "))
+        hermitPower = int(input("Enter hermit power: "))
         X = float(input("Enter X: "))
     except ValueError:
         print("Invalid input")
         return 1
 
+    newton: _Pn = InterpolationTable.newtonInterpolation(directData, newtonPower, X)
+    hermit: _Pn = InterpolationTable.hermiteInterpolation(directData, hermitPower, X)
+
+    print(f"Newton calculated value: {newton(X)}")
+    print(f"Hermit calculated value: {hermit(X)}")
+
     return 0
 
 
 if __name__ == "__main__":
-    interpol = newtonInterpolation(directData, 3, 2.45)
-    print(interpol)
-    func: _Pn = getPolynomial(interpol)
-    x = 2.45
-    print(stringPolynomial(interpol))
-    print("x =", func(x))
-
-    interpol = hermiteInterpolation(directData, 3, 2.45)
-    print(interpol)
-    func: _Pn = getPolynomial(interpol)
-    print(stringPolynomial(interpol))
-    print("x =", func(x))
+    exit(main())
 
