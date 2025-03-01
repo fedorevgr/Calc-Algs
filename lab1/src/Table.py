@@ -2,6 +2,7 @@ class Table:
     data: dict[str, list[float]] = {}
 
     def __init__(self, filename: str):
+        self.data = {}
         with open(filename, 'r') as f:
             header = f.readline().split()
             data = list(map(lambda x: x.split(), f.readlines()))

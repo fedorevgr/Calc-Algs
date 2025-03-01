@@ -21,7 +21,7 @@ def getRawConfiguration(data: DataFrame, power: int, val: float) -> DataFrame:
         :return: DataFrame of adjacent values to val
         :raises InterpolationError, RuntimeError: Interpolation error if not enough rows, RuntimeError if any other error
         """
-    if len(data) < power + 1:
+    if len(data) < power:
         raise InterpolationError("Not enough points")
 
     configuration: DataFrame = data.sort_values(by=data.columns[0], key=lambda col: abs(col - val)).iloc[:power].copy()
@@ -56,7 +56,7 @@ def newtonInterpolate(configuration: DataFrame) -> DataFrame:
                         (x_0 - x_n)
                 )
             else:
-                res = configuration.iloc[0, 1 + sepArgsN - 1] / fact(sepArgsN - 1)
+                res = configuration.iloc[rowStartIdx, 1 + sepArgsN - 1] / fact(sepArgsN-1)
 
             separateDiffTable.iat[rowStartIdx, levelI] = res
 

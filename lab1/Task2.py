@@ -6,17 +6,13 @@ from src.Table import Table
 
 DATA_FILE: str = "data/data.txt"
 
-
-POWERS: int = 5
-
-
 def main() -> int:
     table: Table = Table(DATA_FILE)
     data: DataFrame = DataFrame(table.data, dtype="float64")
     data["x'"] = 1 / data["y'"]
-    data["x''"] = - data["y''"] / (data["y'"] ** 2)
+    data["x''"] = - data["y''"] / (data["y'"] ** 3)
 
-    reverseData: DataFrame = data[["y", "x", "x'", "x''"]]
+    reverseData: DataFrame = data[["y", "x", "x'", "x''"]][data["x"] <= 1]
 
     power: int
     try:
