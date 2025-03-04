@@ -6,9 +6,7 @@ from typing import Iterable, Callable, Optional
 from math import factorial as fact
 from math import ceil, prod
 
-from .exc import InterpolationError
-
-type _Pn = Callable[[float], float]
+from src.exc import InterpolationError
 
 
 def getRawConfiguration(data: DataFrame, power: int, val: float) -> DataFrame:
@@ -127,3 +125,6 @@ class InterpolationTable(DataFrame):
             summ += confRow.iloc[i] * prod((val - xs.iloc[j - 1]) for j in range(1, i))
 
         return summ
+
+
+
