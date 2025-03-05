@@ -1,7 +1,8 @@
 from pandas import DataFrame
 from numpy import linspace
-from  src.Math.Spline import SplineInterpolation
+from src.Math.Spline import SplineInterpolation
 from matplotlib import pyplot as plt
+
 
 func = lambda x: x ** 2
 
@@ -22,10 +23,4 @@ print(data)
 spline = SplineInterpolation(data)
 
 print(spline.spline)
-print(spline(2))
 
-X = linspace(LEFT, RIGHT, 200)
-Y = list(map(spline, X))
-plt.scatter(data["x"], data["y"])
-plt.plot(X, Y)
-plt.show()

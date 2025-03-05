@@ -32,12 +32,10 @@ class SplineInterpolation:
         self.spline.loc[configuration.shape[0], "C"] = 0
 
         self.spline.loc[1:, "A"] = Y.shift(1)
-        self.spline.loc[1:, "D"] = X - X.shift(1)
-        # -2 * (h_n - h_(n-1))
-        self.spline.loc[1:, "B"] = (X + X.shift(1)) * -2
+
         self.spline.loc[:, "F"] = 3 * (
-            (Y.shift(1) - Y.shift(2)) / self.spline.D.shift(1) -
-            (Y - Y.shift(1)) / self.spline.D
+                (Y.shift(1) - Y.shift(2)) / self.spline.h_i.shift(1) -
+                (Y - Y.shift(1)) / self.spline.h_i
         )
 
         self.spline.loc[2, "k"] = self.__KsiZero
@@ -48,7 +46,7 @@ class SplineInterpolation:
 
         C = self.spline.C
         H = self.spline.h_i
-        f2 = (C.shift(-1) - 2 * C.shift(1))
+        f2 = (C.shift(-1) - 2 * C)
         f1 = (Y - Y.shift(1)) / H
 
         self.spline.B = f1 - H * f2 / 3
@@ -58,6 +56,7 @@ class SplineInterpolation:
     def straightPath(self):
         D: DataFrame = self.spline.h_i
         A: DataFrame = self.spline.h_i.shift(1)
+
         F: DataFrame = self.spline["F"]
 
         B: DataFrame = -2 * (A + D)
@@ -77,12 +76,11 @@ class SplineInterpolation:
         for i in range(self.spline.shape[0] - 1, 1, -1):
             C[i-1] = K[i] * C[i] + N[i]
 
-
     def __call__(self, x: float) -> float:
         # 1 2 3 4
         #    ^
         #    2.5
-        rowDF = self.spline[self.spline["x_i"] <= x]
+        rowDF = self.spline[self.spline["x_i"] < x]
 
         if rowDF.empty:
             row = self.spline.iloc[0]
@@ -91,3 +89,8 @@ class SplineInterpolation:
 
         return row.A + row.B * (x - row.x_i) + row.C * (x - row.x_i) ** 2 + row.D * (x - row.x_i) ** 3
 
+    def __repr__(self):
+        return "\n".join(
+            f"{row.A:g} + {row.B:g} * (x - {row.x_i:g}) + {row.C:g} * (x - {row.x_i:g})^2 + {row.D:g} * (x - {row.x_i:g})^3"
+            for i, row in self.spline.iterrows()
+        )
