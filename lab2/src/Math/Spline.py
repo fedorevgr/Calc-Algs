@@ -22,10 +22,11 @@ class SplineInterpolation:
         self.spline = DataFrame(
             nan,
             index=range(configuration.shape[0] + 1),
-            columns=["x_i", "y_i", "A", "B", "C", "D", "F", "k", "n"]
+            columns=["x_i", "y_i", "h_i", "A", "B", "C", "D", "F", "k", "n"]
         )
         self.spline["x_i"] = X.shift(1)
         self.spline["y_i"] = Y.shift(1)
+        self.spline["h_i"] = X - X.shift(1)
 
         self.spline.loc[0, "C"] = 0
         self.spline.loc[configuration.shape[0], "C"] = 0
@@ -35,7 +36,7 @@ class SplineInterpolation:
         # -2 * (h_n - h_(n-1))
         self.spline.loc[1:, "B"] = (X + X.shift(1)) * -2
         self.spline.loc[:, "F"] = 3 * (
-            (Y.shift(1) - Y.shift(2)) / self.spline["D"].shift(1) -
+            (Y.shift(1) - Y.shift(2)) / self.spline.D.shift(1) -
             (Y - Y.shift(1)) / self.spline.D
         )
 
@@ -46,7 +47,7 @@ class SplineInterpolation:
         self.reversePath()
 
         C = self.spline.C
-        H = self.spline.D
+        H = self.spline.h_i
         f2 = (C.shift(-1) - 2 * C.shift(1))
         f1 = (Y - Y.shift(1)) / H
 
@@ -55,10 +56,12 @@ class SplineInterpolation:
         self.spline.D = (C.shift(-1) - C) / (3 * H)
 
     def straightPath(self):
+        D: DataFrame = self.spline.h_i
+        A: DataFrame = self.spline.h_i.shift(1)
         F: DataFrame = self.spline["F"]
-        D: DataFrame = self.spline["D"]
-        B: DataFrame = self.spline["B"]
-        A: DataFrame = self.spline["A"]
+
+        B: DataFrame = -2 * (A + D)
+
         ksi: DataFrame = self.spline["k"]
         nu: DataFrame = self.spline["n"]
 
