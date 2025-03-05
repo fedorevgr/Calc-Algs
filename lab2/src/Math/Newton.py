@@ -1,12 +1,12 @@
 from pandas import DataFrame, concat
 from numpy import nan
 
-from typing import Iterable, Callable, Optional
+from typing import Iterable, Optional
 
 from math import factorial as fact
 from math import ceil, prod
 
-from src.exc import InterpolationError
+from src.Math.exc import InterpolationError
 
 
 def getRawConfiguration(data: DataFrame, power: int, val: float) -> DataFrame:
