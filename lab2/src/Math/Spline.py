@@ -46,7 +46,7 @@ class SplineInterpolation:
 
         C = self.spline.C
         H = self.spline.h_i
-        f2 = (C.shift(-1) - 2 * C)
+        f2 = (C.shift(-1) + 2 * C)
         f1 = (Y - Y.shift(1)) / H
 
         self.spline.B = f1 - H * f2 / 3
@@ -73,7 +73,7 @@ class SplineInterpolation:
         K: DataFrame = self.spline["k"]
         N: DataFrame = self.spline["n"]
 
-        for i in range(self.spline.shape[0] - 1, 1, -1):
+        for i in range(self.spline.shape[0]-1, 1, -1):
             C[i-1] = K[i] * C[i] + N[i]
 
     def __call__(self, x: float) -> float:
