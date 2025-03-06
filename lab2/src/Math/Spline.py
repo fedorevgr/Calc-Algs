@@ -1,6 +1,5 @@
 from pandas import DataFrame
 from numpy import nan
-from bisect import bisect_left
 
 from .exc import IllegalDataError
 
@@ -13,7 +12,7 @@ class SplineInterpolation:
     def __init__(self, configuration: DataFrame) -> None:
         if configuration.shape[1] != 2:
             raise IllegalDataError("Table width is not 2")
-        if configuration.shape[0] < 3:
+        if configuration.shape[0] < 2:
             raise IllegalDataError("Table height is less than 2")
 
         X: DataFrame = configuration.iloc[:, 0]

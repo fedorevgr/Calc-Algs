@@ -6,7 +6,7 @@ from typing import Iterable, Optional
 from math import factorial as fact
 from math import ceil, prod
 
-from src.Math.exc import InterpolationError
+from src.Math.exc import InterpolationError, IllegalDataError
 
 
 def getRawConfiguration(data: DataFrame, power: int, val: float) -> DataFrame:
@@ -62,34 +62,6 @@ def newtonInterpolate(configuration: DataFrame) -> DataFrame:
 
 
 class InterpolationTable(DataFrame):
-    @staticmethod
-    def hermiteInterpolation(data: DataFrame, power: int, val: float) -> "InterpolationTable":
-        """
-            Assume all derivatives are known
-            :param data:
-            :param power:
-            :param val:
-            :return:
-        """
-        nArgs: int = power + 1
-        configuration: DataFrame = getRawConfiguration(data, ceil(nArgs / 3), val)
-
-        configuration.sort_values(by=configuration.columns[0], key=lambda col: abs(col - val), inplace=True)
-
-        configurationExtensions: list[DataFrame] = []
-
-        for copiedRowIdx in range(nArgs // 3):
-            configurationExtensions.append(configuration.iloc[[copiedRowIdx]].copy())
-            configurationExtensions.append(configuration.iloc[[copiedRowIdx]].copy())
-
-        if nArgs % 3 == 2:
-            configurationExtensions.append(configuration.iloc[[-1]].copy())
-
-        configuration = concat([configuration] + configurationExtensions, ignore_index=True)
-
-        configuration.sort_values(by="tag", inplace=True)
-
-        return InterpolationTable(newtonInterpolate(configuration))
 
     @staticmethod
     def newtonInterpolation(data: DataFrame, power: int, val: float) -> "InterpolationTable":
@@ -102,6 +74,11 @@ class InterpolationTable(DataFrame):
             :return: Interpolation table adjusted to left upper corner
             :raises InterpolationError, RuntimeError: Interpolation error if not enough rows
         """
+        if data.shape[1] != 2:
+            raise IllegalDataError("Table width is not 2")
+        if data.shape[0] < 2:
+            raise IllegalDataError("Table height is less than 2")
+
         configuration: DataFrame = getRawConfiguration(data, power + 1, val)
 
         return InterpolationTable(newtonInterpolate(configuration))
