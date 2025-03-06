@@ -1,5 +1,6 @@
-from .Table import Table
+from .Table import ABOBA
+from .Multydimetia import MultidimensionalInterpolatorInator as MII
 from pprint import pprint
 
-
-pprint(Table("data/data.txt").getAsDF())
+pprint(ABOBA)
+pprint(MII.interp(ABOBA, [1.4, 1.4, 1.4]))
