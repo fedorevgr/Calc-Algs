@@ -40,7 +40,7 @@ class MultidimensionalInterpolatorInator:
             for x, val in data.items():
                 newData[x] = MultidimensionalInterpolatorInator.interp(val, vector[1:], mVector[1:], _powers[1:])
 
-            return MultidimensionalInterpolatorInator.unionInterpolate(newData, vector[1], mVector[1], _powers[1])
+            return MultidimensionalInterpolatorInator.unionInterpolate(newData, vector[0], mVector[0], _powers[1])
 
     @staticmethod
     def unionInterpolate(d: dict, val: float, method: Method, _power: int = 0):

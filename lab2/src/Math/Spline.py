@@ -82,7 +82,7 @@ class SplineInterpolation:
         rowDF = self.spline[self.spline["x_i"] < x]
 
         if rowDF.empty:
-            row = self.spline.iloc[0]
+            row = self.spline.iloc[1]
         else:
             row = rowDF.iloc[-1]
 

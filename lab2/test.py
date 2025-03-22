@@ -4,11 +4,11 @@ from src.Math.Spline import SplineInterpolation
 from matplotlib import pyplot as plt
 
 
-func = lambda x: x ** 2
+func = lambda x: 1/x
 
-LEFT = 0
-RIGHT = 5
-TEST_SEG = 6
+LEFT = 0.0001
+RIGHT = 2
+TEST_SEG = 50
 
 
 X = linspace(LEFT, RIGHT, TEST_SEG)
@@ -23,4 +23,5 @@ print(data)
 spline = SplineInterpolation(data)
 
 print(spline.spline)
+print(spline(0))
 
