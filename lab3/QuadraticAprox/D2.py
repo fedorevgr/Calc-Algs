@@ -1,41 +1,72 @@
 from pandas import DataFrame
-from numpy import ndarray, float64
-from typing import Final
+from numpy import ndarray, float64, sqrt
+from typing import Final, Iterable, Tuple, Callable
 from numpy.linalg import solve
+
+from math import pow
 
 
 from . import valT
 
-
 class Approx:
 	_coefficients: ndarray[float]
-	_N: Final[int] = 3
+	_POWER: int
 
-	def __init__(self, data: DataFrame):
+	@staticmethod
+	def iterate(power: int) -> Iterable[tuple[int, ...]]:
+		r: int = 0
+		for i in range(power + 1):
+			for j in range(power - i + 1):
+				yield r, i, j
+				r += 1
+
+	@staticmethod
+	def forPLength(l: int) -> int:
+		return (-1 + sqrt(1 + 8 * l)) // 2
+
+	@staticmethod
+	def Xvector(i: int, j: int) -> Callable[[float, float, float], float]:
+		return lambda _1, _2, _3: pow(_1, i) * pow(_2, j) * pow(_3, 3 - i - j)
+
+	def __init__(self, data: DataFrame, power: int) -> None:
 		"""
+		Vector: (x, y, 1)
 		:param data: i, x, y, z, weight
-		:param power:
+		:param power: polynom power
 		"""
-		eqSystem: DataFrame = DataFrame(index=range(self._N), columns=range(self._N), dtype=float)
-		vals: ndarray = ndarray(self._N, dtype=float)
+		self._POWER = power
+		ROWS = (power + 2) * (power + 1) // 2
 
-		eqSystem.loc[0, :] = [sum(data.weight), sum(data.weight * data.x), sum(data.weight * data.y)]
-		vals[0] = sum(data.weight * data.z)
+		eqSystem: DataFrame = DataFrame(index=range(ROWS), columns=range(ROWS), dtype=float)
+		vals: ndarray = ndarray(ROWS, dtype=float)
 
-		eqSystem.loc[1, :] = [sum(data.weight * data.x), sum(data.weight * data.x * data.x), sum(data.weight * data.y * data.x)]
-		vals[1] = sum(data.weight * data.z * data.x)
+		for rowIndex, I, J in Approx.iterate(power):
+			XIJ = Approx.Xvector(I, J)
 
-		eqSystem.loc[2, :] = [sum(data.weight * data.y), sum(data.weight * data.x * data.y),
-							  sum(data.weight * data.y * data.y)]
-		vals[2] = sum(data.weight * data.z * data.y)
+			for colIndex, i, j in Approx.iterate(power):
+				eqSystem.iloc[rowIndex, colIndex] = sum(
+					rowM.weight * XIJ(rowM.x, rowM.y, 1) * Approx.Xvector(i, j)(rowM.x, rowM.y, 1)
+					for m, rowM in data.iterrows()
+				)
+
+			vals[rowIndex] = sum(
+				rowM.weight * XIJ(rowM.x, rowM.y, 1) * rowM.z
+					for m, rowM in data.iterrows()
+			)
 
 		self._coefficients = solve(eqSystem, vals)
 
 	def __call__(self, x: float,  y: float) -> float:
-		return self._coefficients[0] + self._coefficients[1] * x + self._coefficients[2] * y
+		return sum(
+			self._coefficients[coefI] * Approx.Xvector(i, j)(x, y, 1)
+			for coefI, i, j in Approx.iterate(self._POWER)
+		)
 
 	def __str__(self) -> str:
-		return f"({self._coefficients[0]:g}) + ({self._coefficients[1]:g}) * x + ({self._coefficients[2]:g}) * y"
+		return " + ".join(
+			f"({self._coefficients[coefI]}) * (x ^ {i}) * (y ^ {j})"
+			for coefI, i, j in Approx.iterate(self._POWER)
+		)
 
 	def coefficients(self) -> ndarray:
 		return self._coefficients

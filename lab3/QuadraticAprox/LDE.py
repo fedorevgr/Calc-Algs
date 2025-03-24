@@ -1,36 +1,40 @@
 from pandas import DataFrame
 from numpy.linalg import solve
-from numpy import ndarray
+from numpy import ndarray, linspace
 
 from math import pow
 
 from typing import Final,Callable
 
 
+type _fX = Callable[[float],float]
+
+
 class Approx:
 	_coefficients: ndarray[float]
 	_N: Final[int] = 2
+	_segments: int = 100
 
-	def __init__(self, data: DataFrame, p, g, f):
+	def __init__(self, data: DataFrame, p: _fX, g: _fX, f: _fX) -> None:
 		"""
 		data: DataFrame - x, y
 		"""
-		l = lambda x: x * x
-		lStrih = lambda x: 2 * x
-		lStrihShtrih = lambda x: 2
+		h: float = (data[1, "x"] + data[0, "x"]) / self._segments
+		x = linspace(data[0, "x"], data[1, "x"], self._segments, dtype=float)
 
-		eqSystem: DataFrame = DataFrame(index=range(self._N), columns=range(self._N), dtype=float)
-		vals: ndarray = ndarray(self._N, dtype=float)
-
-		for i, row in data.iterrows():
-			x = row.x
-			for m in range(self._N):
-				k = m + 1
-				eqSystem.iloc[m, i] = (k*(k-1)*pow(x, k-2) if x else 0) + p(x)*k*pow(x, k-1) + g(x)*pow(x, k)
-
-			vals[i] = f(x) - lStrihShtrih(x) - p(x)*lStrih(x) - g(x)*l(x)
-
-		self._coefficients = solve(eqSystem, vals)
+		for i in range(1, self._segments):
+			y[0].append(
+				(
+					(h ** 2 * f(x[i]) - (1.0 - (h / 2) * p(x[i])) * y[0][i - 1] - (h ** 2 * g(x[i]) - 2) * y[0][i]) /
+					(1 + h / 2 * p(x[i]))
+				)
+			)
+			y[1].append(
+				(
+					(-(1 - h / 2 * p(x[i])) * y[1][i - 1] - (h ** 2 * g(x[i]) - 2) * y[1][i]) /
+					(1 + h / 2 * p(x[i]))
+				)
+			)
 
 	def __call__(self, x: float,  y: float) -> float:
 		return self._coefficients[0] + self._coefficients[1] * x + self._coefficients[2] * y
