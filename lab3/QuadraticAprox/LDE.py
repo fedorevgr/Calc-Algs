@@ -63,7 +63,7 @@ class Approx:
 		self._coefficients = solve(eqSystem, B)
 
 	def __call__(self, x: float) -> float:
-		return Approx._U0(x) + sum([C * self._func(k)(x) for k, C in enumerate(self._coefficients, self._powShift)])
+		return Approx._U0(x) + sum([C * self._func(k + self._powShift)(x) for k, C in enumerate(self._coefficients)])
 
 	def coefficients(self) -> ndarray:
 		return self._coefficients
