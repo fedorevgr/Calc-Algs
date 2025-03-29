@@ -21,26 +21,32 @@ class Approx:
 	@staticmethod
 	def _func(k:int) -> Callable[[float],float]:
 		#k += Approx._powShift
-		return lambda x:  pow(1-x, k) * pow(x, 2) # pow((-(x - 1)), k)
+		k += 1
+		return lambda x:   pow(x, k) * (1 - x) # pow(1-x, k) * pow(x, 2) # pow((-(x - 1)), k)
+	# x ^ n - x ^ (n + 1)
 
 	@staticmethod
 	def _funcD(k: int) -> Callable[[float], float]:
 		#k += Approx._powShift
+		k += 1
 		if k == 0:
-			return lambda x:  2 * x
-		return lambda x: -1 * x * ((k + 2) * x - 2) * pow(1 - x, k-1) # pow((-(x - 1)), k - 1) * k * -1
+			return lambda x:  -1
+		return lambda x: k * pow(x, k-1) - (k+1) * pow(x, k)  # -1 * x * ((k + 2) * x - 2) * pow(1 - x, k-1) # pow((-(x - 1)), k - 1) * k * -1
 
 	@staticmethod
 	def _funcDD(k: int) -> Callable[[float], float]:
 		#k += Approx._powShift
+		k += 1
 		if k == 1:
-			return lambda x:  2 - 6 * x
+			return lambda x:  -2
 		if k == 0:
-			return lambda x:  2
+			return lambda x:  0
 
-		return lambda x: pow(1-x, k-2) * (
-			(k * k + 3 * k + 2) * x * x - 4 * (k + 1) * x + 2
-		)  # pow((-(x - 1)), k - 2) * k * (k - 1)
+		return lambda x: k * (k-1) * pow(x, k-2) - (k-1) * (k+1) * pow(x, k-1)
+		#
+		# return lambda x: pow(1-x, k-2) * (
+		# 	(k * k + 3 * k + 2) * x * x - 4 * (k + 1) * x + 2
+		# )  # pow((-(x - 1)), k - 2) * k * (k - 1)
 
 	@staticmethod
 	def U(k: int, p: Callable[[float], float], g: Callable[[float], float]) -> Callable[[float],float]:
