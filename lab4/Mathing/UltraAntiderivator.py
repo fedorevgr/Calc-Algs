@@ -1,6 +1,8 @@
+from math import isclose
 from typing import Callable
 
-from numpy import ndarray, array, linspace
+from numpy import ndarray, array, linspace, vectorize, concatenate, zeros
+from numpy.linalg import solve
 from pandas import DataFrame
 
 
@@ -25,7 +27,10 @@ class Solve:
 	Solves the equation:
 		u''(x) = f(x, y)
 	"""
-	EPS = 1e-6
+	EPS = 1e-3
+	MAX_OP = 100
+
+	isClose: Callable[[ndarray, ndarray], ndarray] = vectorize(lambda x, y: isclose(x, y, rel_tol=Solve.EPS))
 
 	leftBound: Point
 	rightBound: Point
@@ -52,14 +57,37 @@ class Solve:
 		self.fD = deriveF
 
 		self.N = N
-		# mesh = linspace(self.leftBound.x, self.rightBound.x, N)
-		# step: float = (self.rightBound.x - self.leftBound.x) / N
 
-	def solve(self):
-		eqSystem: ndarray = ndarray((self.N, self.N), dtype=float)
-		free: ndarray = ndarray(self.N, dtype=float)
-		delta: ndarray = ndarray(self.N, dtype=float)
+	def solve(self, firstApproxFunc: f_xT):
+		X = linspace(self.leftBound.x, self.rightBound.x, self.N)
+		step: float = (self.rightBound.x - self.leftBound.x) / self.N
+		Y: ndarray = vectorize(firstApproxFunc)(X)
+		nextY: ndarray = ndarray(self.N, dtype=float)
+
+		eqSystem: ndarray = zeros((self.N-2, self.N-2), dtype=float)
+
+		free: ndarray = zeros(self.N-2, dtype=float)
+		delta: ndarray = zeros(self.N-2, dtype=float)
+
+		eqSystem[0][1] = 1
+		eqSystem[-1][-2] = 1
+		for i in range(1, self.N-2-1):
+			eqSystem[i][i-1] = 1
+			eqSystem[i][i+1] = 1
+
+		for _ in range(self.MAX_OP):
 
 
- 		for i in range(1, self.N-1):
-			...
+			for rowI in range(self.N-2):
+				eqSystem[rowI][rowI] = -(2 + self.fD(X[rowI+1], Y[rowI+1]) * step * step)
+
+			free = -1 * (Y[:-2] - 2 * Y[1:-1] + Y[2:] - vectorize(self.f)(X, Y)[1:-1]  * step * step)
+
+			delta = concatenate(([0], solve(eqSystem, free), [0]))
+
+			nextY = Y + delta
+			if all(self.isClose(nextY, Y)):
+				break
+			Y = nextY
+
+		return X, nextY
