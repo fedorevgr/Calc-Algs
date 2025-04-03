@@ -17,9 +17,40 @@ class Point:
 
 
 class McQueen:
+	# @staticmethod
+	# def zoomZoomZoom(eq: ndarray) -> ndarray:
+	# 	ksi: ndarray
+	# 	nu: ndarray
+	#
+	#
+	# 	return array([1])
+
 	@staticmethod
-	def zoomZoomZoom(eq: DataFrame) -> ndarray:
-		return array([1])
+	def run_through(x: ndarray, m_f: ndarray) -> ndarray:
+		solution = [0] * x.shape[0]
+		n = len(solution) - 1
+		coefs = [(0, 0)] * x.shape[0]
+		coefs[0] = (-x[0][1] / x[0][0], m_f[0] / x[0][0])
+
+		for i in range(1, len(solution) - 1):
+			a = x[i][i - 1]
+			b = x[i][i]
+			c = x[i][i + 1]
+			y = b + a * coefs[i - 1][0]
+			f = m_f[i]
+
+			xi = -c / y
+			nu = (f - a * coefs[i - 1][1]) / y
+			coefs[i] = (xi, nu)
+
+		coefs[n] = 0, (m_f[n] - x[n][n - 1] * coefs[n - 1][1]) / \
+					  (x[n][n] + x[n][n - 1] * coefs[n - 1][0])
+		solution[n] = coefs[n][1]
+
+		for i in range(n - 1, -1, -1):
+			solution[i] = coefs[i][0] * solution[i + 1] + coefs[i][1]
+
+		return array(solution)
 
 
 class Solve:
@@ -76,8 +107,6 @@ class Solve:
 			eqSystem[i][i+1] = 1
 
 		for _ in range(self.MAX_OP):
-
-
 			for rowI in range(self.N-2):
 				eqSystem[rowI][rowI] = -(2 + self.fD(X[rowI+1], Y[rowI+1]) * step * step)
 
