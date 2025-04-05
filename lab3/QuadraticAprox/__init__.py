@@ -1,0 +1,1 @@
+type valT = tuple[float, float]
