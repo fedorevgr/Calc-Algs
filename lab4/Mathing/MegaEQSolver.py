@@ -38,7 +38,9 @@ class Solver:
 		eqSystem = ndarray((len(startApprox), len(startApprox)), dtype=float)
 		free: ndarray = ndarray(len(startApprox), dtype=float)
 
+		n = 0
 		while True:
+			n+= 1
 			for i, fg in enumerate(zip(self.func, self.grad)):
 				eqSystem[i] = fg[1](prevApprox)
 				free[i] = -1 * fg[0](prevApprox)
@@ -53,4 +55,4 @@ class Solver:
 
 			prevApprox = nextApprox
 
-		return nextApprox
+		return nextApprox, n
